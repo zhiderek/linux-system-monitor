@@ -2,7 +2,9 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
-
+#include <unordered_map>
+#include <iostream>
+#include <exception>
 #include "linux_parser.h"
 
 using std::stof;
@@ -67,7 +69,42 @@ vector<int> LinuxParser::Pids() {
 }
 
 // TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+// Memory Utilization = 1.0 - (free_memory / (total_memory - buffers))
+float LinuxParser::MemoryUtilization() { 
+  // int MemTotal, MemFree, buffers;
+  string key, size;
+  float value;
+  string line;
+  std::unordered_map<string, int> memoMap;
+  string line;
+  std::ifstream stream(kProcDirectory+kMeminfoFilename);
+  int stopCounter = 0;
+  if (stream.is_open()) {
+    while (memoMap.size()<3 && std::getline(stream, line)) {
+      std::replace(line.begin(), line.end(), ':', ' ');
+      std::istringstream linestream(line);
+      linestream >> key >> value >> size;
+      if (key == "MemTotal") {
+        memoMap['MemTotal'] = value;
+      }
+      if (key == "MemFree") {
+        memoMap['MemFree'] = value;
+      }
+      if (key == "buffers") {
+        memoMap['buffers'] = value;
+      }
+
+      if (stopCounter > 100000) {
+        throw std::runtime_error("wrong input file?");
+      }
+      stopCounter++;
+    }
+    if (memoMap.size()==3) {
+      return 1.0 - (memoMap["MemFree"] / (memoMap["MemTotal"] - memoMap["buffers"]));
+    }
+  }
+  return -1.0;
+}
 
 // TODO: Read and return the system uptime
 long LinuxParser::UpTime() { return 0; }
