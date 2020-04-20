@@ -75,8 +75,7 @@ float LinuxParser::MemoryUtilization() {
   string key, size;
   float value;
   string line;
-  std::unordered_map<string, int> memoMap;
-  string line;
+  std::unordered_map<string, float> memoMap;
   std::ifstream stream(kProcDirectory+kMeminfoFilename);
   int stopCounter = 0;
   if (stream.is_open()) {
@@ -85,13 +84,13 @@ float LinuxParser::MemoryUtilization() {
       std::istringstream linestream(line);
       linestream >> key >> value >> size;
       if (key == "MemTotal") {
-        memoMap['MemTotal'] = value;
+        memoMap["MemTotal"] = value;
       }
       if (key == "MemFree") {
-        memoMap['MemFree'] = value;
+        memoMap["MemFree"] = value;
       }
       if (key == "buffers") {
-        memoMap['buffers'] = value;
+        memoMap["buffers"] = value;
       }
 
       if (stopCounter > 100000) {
