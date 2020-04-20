@@ -6,7 +6,7 @@
 #include <iostream>
 #include <exception>
 #include "linux_parser.h"
-
+#include <assert.h>
 using std::stof;
 using std::string;
 using std::to_string;
@@ -119,17 +119,70 @@ long LinuxParser::UpTime() {
 }
 
 // TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
+long LinuxParser::Jiffies() { 
+	return LinuxParser::UpTime() * sysconf(_SC_CLK_TCK);
+}
 
 // TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
+long LinuxParser::ActiveJiffies(int pid) { 
+	long jiffi=0;
+	long activeJiffiSum = 0;
+	string line;
+	std::ifstream stream(kProcDirectory+"/"+ std::to_string(pid) + "/" + kStatFilename);
+	if (stream.is_open()) {
+		std::getline(stream, line);
+		std::istringstream linestream(line);
+		for (int i=0; i<13; i++) {
+			linestream >> jiffi;
+		}
+		for (int i=0; i<4; i++) {
+			linestream >> jiffi;
+			activeJiffiSum += jiffi;
+		}
+	return activeJiffiSum;
+	}
+}
 
 // TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
+long LinuxParser::ActiveJiffies() { 
+	long jiffi=0;
+	long jiffiSum = 0;
+	string line, cpu;
+	std::ifstream stream(kProcDirectory+kStatFilename);
+	if (stream.is_open()) {
+		std::getline(stream, line);
+	 	std::istringstream linestream(line);
+		linestream >> cpu;
+		assert(cpu=="cpu");
+		while (linestream>>jiffi) {
+			jiffiSum += jiffi;
+		}
+	}
+	std::cout << "sum of jiffies = " << jiffiSum << "\n";
+	return jiffiSum;	
+}
 
 // TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
+long LinuxParser::IdleJiffies() {
+	long jiffi=0;
+    long idleJiffiSum = 0;
+    string line, cpu;
+    std::ifstream stream(kProcDirectory+kStatFilename);
+    if (stream.is_open()) {
+        std::getline(stream, line);
+        std::istringstream linestream(line);
+        linestream >> cpu;
+        assert(cpu=="cpu");
+        for (int i=0; i< 10; i++) {
+			linestream >> jiffi;
+			if (i==3 || i==4) {
+	            idleJiffiSum += jiffi;
+			}
+        }
+	}
+    std::cout << "sum of idle jiffies = " << idleJiffiSum << "\n";
+    return idleJiffiSum;
+}
 
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() { return {}; }
