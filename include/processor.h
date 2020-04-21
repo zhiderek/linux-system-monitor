@@ -3,10 +3,12 @@
 
 class Processor {
  public:
-  float Utilization();  // TODO: See src/processor.cpp
+  float Utilization();  //calculate the ratio between difference in active time and difference in total time 
 
-  // TODO: Declare any necessary private members
  private:
+	long curtActive=0;
+	long curtTotal=0;
+	float epsilon=0.0001; //avoid floating number overflowing
 };
 
 #endif
