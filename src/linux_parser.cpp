@@ -255,40 +255,42 @@ string LinuxParser::Command(int pid) {
 
 // TODO: Read and return the memory used by a process
 string LinuxParser::Ram(int pid) {
-	string key;
-    int long vmSize;
+	string key, value;
     string line;
     std::ifstream stream(kProcDirectory+std::to_string(pid)+kStatusFilename);
     if (stream.is_open()) {
-        while (std::getline(stream, line)) {
-            //parser the first token to check if it's processes
+        while(std::getline(stream, line)){
 			std::replace(line.begin(), line.end(), ':', ' ');
-            std::istringstream linestream(line);
-            linestream >> key;
-            if (key == "vmSize") {
-                linestream >> vmSize;
-            }
-        }
+    	    //parser the first token to check if it's processes
+       	    std::istringstream linestream(line);
+        	linestream >> key;
+			if (key == "VmSize") {
+				linestream >> value;
+				int vmSize = std::stoi(value);
+				vmSize = vmSize / 1024;
+				return std::to_string(vmSize);
+			}
+		}
     }
-	int long vmSize_mb = vmSize / 1024; //convert to MB	
-	return std::to_string(vmSize_mb);	
+	return string();	
 }
 
 // TODO: Read and return the user ID associated with a process
 string LinuxParser::Uid(int pid) {
 	string token, line, uid;
 	std::ifstream stream(kProcDirectory+std::to_string(pid)+kStatusFilename);
-	while (stream.is_open()) {
-		std::getline(stream, line);
-		std::replace(line.begin(), line.end(), ':', ' ');
-		std::istringstream linestream(line);
-		linestream >> token;
-		if (token == "Uid") {
-			linestream >> uid;
-			return uid;
-		}	
+	if (stream.is_open()) {
+		while (std::getline(stream, line)) {
+			std::replace(line.begin(), line.end(), ':', ' ');
+			std::istringstream linestream(line);
+			linestream >> token;
+			if (token == "Uid") {
+				linestream >> uid;
+				return uid;
+			}
+		}
 	}
-	return uid;
+	return string();
 }
 
 // TODO: Read and return the user associated with a process
@@ -296,17 +298,19 @@ string LinuxParser::User(int pid) {
 	string uid = Uid(pid);
 	string token, line, user, x, uid_;
 	std::ifstream stream(kPasswordPath);
-	while (stream.is_open()) {
-		std::getline(stream, line);
-		std::replace(line.begin(), line.end(), ':', ' ');
-		std::istringstream linestream(line);
-		if (linestream >> user >> x >> uid_) {
-			if (uid_ == uid) {
-				return user;
+	if (stream.is_open()) {
+		while (std::getline(stream, line) ) {
+			std::replace(line.begin(), line.end(), ':', ' ');
+			std::istringstream linestream(line);
+			if (linestream >> user >> x >> uid_) {
+				if (uid_ == uid) {
+					return user;
+				}
 			}
 		}
 	}
-}	
+	return string();
+}		
 // TODO: Read and return the uptime of a process
 long LinuxParser::UpTime(int pid[[maybe_unused]]) {
 	string jiffi;
