@@ -89,8 +89,8 @@ float LinuxParser::MemoryUtilization() {
       if (key == "MemFree") {
         memoMap["MemFree"] = value;
       }
-      if (key == "buffers") {
-        memoMap["buffers"] = value;
+      if (key == "Buffers") {
+        memoMap["Buffers"] = value;
       }
 
       if (stopCounter > 100000) {
@@ -98,8 +98,10 @@ float LinuxParser::MemoryUtilization() {
       }
       stopCounter++;
     }
+	assert (memoMap.size() ==3);
+
     if (memoMap.size()==3) {
-      return 1.0 - (memoMap["MemFree"] / (memoMap["MemTotal"] - memoMap["buffers"]));
+      return 1.0 - (memoMap["MemFree"] / (memoMap["MemTotal"] - memoMap["Buffers"]));
     }
   }
   return -1.0;
@@ -120,8 +122,8 @@ long LinuxParser::UpTime() {
 
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() { 
-
 	long totalJiffies =  ActiveJiffies() + IdleJiffies();
+	return totalJiffies;
 }
 
 // TODO: Read and return the number of active jiffies for a PID
@@ -140,8 +142,8 @@ long LinuxParser::ActiveJiffies(int pid) {
 			linestream >> jiffi;
 			activeJiffiSum += jiffi;
 		}
-	return activeJiffiSum;
 	}
+	return activeJiffiSum;
 }
 
 // TODO: Read and return the number of active jiffies for the system
@@ -237,7 +239,6 @@ int LinuxParser::RunningProcesses() {
 
 
 // TODO: Read and return the command associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::Command(int pid) { 
 	string token, line;
 	string command = "";
@@ -312,7 +313,7 @@ string LinuxParser::User(int pid) {
 	return string();
 }		
 // TODO: Read and return the uptime of a process
-long LinuxParser::UpTime(int pid[[maybe_unused]]) {
+long LinuxParser::UpTime(int pid) {
 	string jiffi;
     string line;
     std::ifstream stream(kProcDirectory+"/"+ std::to_string(pid) + "/" + kStatFilename);
@@ -325,6 +326,6 @@ long LinuxParser::UpTime(int pid[[maybe_unused]]) {
         for (int i=0; i<22; i++) {
             linestream >> jiffi;
         }
-    return stol(jiffi)/sysconf(_SC_CLK_TCK);
-    }	
+	}
+    return stol(jiffi)/sysconf(_SC_CLK_TCK);	
 }
