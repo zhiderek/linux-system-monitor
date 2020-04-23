@@ -38,7 +38,7 @@ float Process::CpuUtilization() {
 	//copied formulae from https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
 	long total_time = utime + stime + cutime + cstime;
 	long seconds = uptime - (starttime / sysconf(_SC_CLK_TCK));
-	float cpu_usage = ( total_time / sysconf(_SC_CLK_TCK)) / seconds;
+	float cpu_usage = (1.0 * total_time / sysconf(_SC_CLK_TCK)) / seconds;
 	return cpu_usage;
 }
 
